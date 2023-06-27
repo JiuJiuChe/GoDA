@@ -1,2 +1,1 @@
-# GoDA
-Gallery of Denoising Algorithms
+# Gallery of Denoising Algorithms
