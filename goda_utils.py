@@ -33,6 +33,16 @@ def pad_plane(plane, pad_plane, pad, mode='constant', pad_val=0):
         pad_plane[-pad[1]:, :] = pad_val
         pad_plane[pad[0]:pad[1], :pad[2]] = pad_val
         pad_plane[pad[0]:pad[1], -pad[3]:] = pad_val
+    elif mode == 'reflect':
+        pad_plane[:pad[0], pad[2]:-pad[3]] = plane[1:pad[0]+1, :][::-1]             # top
+        pad_plane[-pad[1]:, pad[2]:-pad[3]] = plane[-pad[1]-1:-1, :][::-1]          # bottom
+        pad_plane[:, :pad[2]] = pad_plane[:, pad[2]+1:2*pad[2]+1][:, ::-1]          # left
+        pad_plane[:, -pad[3]:] = pad_plane[:, -2*pad[3]-1:-pad[3]-1][:, ::-1]       # right
+    elif mode == 'symmetric':
+        pad_plane[:pad[0], pad[2]:-pad[3]] = plane[:pad[0], :][::-1]                # top
+        pad_plane[-pad[1]:, pad[2]:-pad[3]] = plane[-pad[1]:, :][::-1]              # bottom
+        pad_plane[:, :pad[2]] = pad_plane[:, pad[2]:2*pad[2]][:, ::-1]              # left
+        pad_plane[:, -pad[3]:] = pad_plane[:, -2*pad[3]:-pad[3]][:, ::-1]           # right
     else:
         raise NotImplementedError(f'Padding mode {mode} is not supported yet')
 
@@ -42,7 +52,13 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     img = io_utils.omni_load(r'./src/test.png')
-    padded = pad_image(img, [100, 10, 50, 200])
+    padded = pad_image(img, [100, 25, 50, 200], mode='reflect')
+    ref = np.pad(img, ((100, 25), (50, 200), (0, 0)), 'wrap')
 
+    plt.subplot(121)
     plt.imshow(padded)
+    plt.subplot(122)
+    plt.imshow(ref)
     plt.show()
+
+    # np.testing.assert_array_almost_equal(padded, ref)
